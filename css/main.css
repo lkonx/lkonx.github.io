@@ -149,9 +149,9 @@ sup > a::before,
   transition: all 0.3s;
 }
 .qr-img {
-  max-width: 100px;
+  max-width: 120px;
   position: absolute;
-  right: -50px;
+  right: -60px;
   z-index: 99;
   display: none;
   box-shadow: 0 0 20px -5px rgba(158,158,158,0.2);
