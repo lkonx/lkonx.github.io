@@ -182,7 +182,7 @@
     <div class="category row">
       <a
         class="category-item collapsed list-group-item category-item-action col-10 col-md-11"
-        id="heading-ckfyxdkma0003hsuv6bxndzyp" role="tab" data-toggle="collapse" href="#collapse-ckfyxdkma0003hsuv6bxndzyp"
+        id="heading-ckfyyhv940003jkuvbtyy9o22" role="tab" data-toggle="collapse" href="#collapse-ckfyyhv940003jkuvbtyy9o22"
         aria-expanded="false"
       >
         数据库
@@ -195,8 +195,8 @@
       <div class="category-collapse">
         
           
-  <div id="collapse-ckfyxdkma0003hsuv6bxndzyp" class="collapse in " role="tabpanel"
-       aria-labelledby="heading-ckfyxdkma0003hsuv6bxndzyp">
+  <div id="collapse-ckfyyhv940003jkuvbtyy9o22" class="collapse in " role="tabpanel"
+       aria-labelledby="heading-ckfyyhv940003jkuvbtyy9o22">
     
   
   
@@ -205,7 +205,7 @@
     <div class="category-sub row">
       <a
         class="category-subitem collapsed list-group-item category-item-action col-10 col-md-11"
-        id="heading-ckfyxdkmg000chsuv9x80h4em" role="tab" data-toggle="collapse" href="#collapse-ckfyxdkmg000chsuv9x80h4em"
+        id="heading-ckfyyhv9a0008jkuvaira7g42" role="tab" data-toggle="collapse" href="#collapse-ckfyyhv9a0008jkuvaira7g42"
         aria-expanded="false"
       >
         MySQL
@@ -218,8 +218,8 @@
       <div class="category-collapse">
         
           
-  <div id="collapse-ckfyxdkmg000chsuv9x80h4em" class="collapse in" role="tabpanel"
-       aria-labelledby="heading-ckfyxdkmg000chsuv9x80h4em">
+  <div id="collapse-ckfyyhv9a0008jkuvaira7g42" class="collapse in" role="tabpanel"
+       aria-labelledby="heading-ckfyyhv9a0008jkuvaira7g42">
     
     
     
@@ -254,7 +254,7 @@
     <div class="category row">
       <a
         class="category-item collapsed list-group-item category-item-action col-10 col-md-11"
-        id="heading-ckfyxdkmf0009hsuv54kfhf8v" role="tab" data-toggle="collapse" href="#collapse-ckfyxdkmf0009hsuv54kfhf8v"
+        id="heading-ckfyyhva8000gjkuv8b954srt" role="tab" data-toggle="collapse" href="#collapse-ckfyyhva8000gjkuv8b954srt"
         aria-expanded="false"
       >
         读书
@@ -267,8 +267,8 @@
       <div class="category-collapse">
         
           
-  <div id="collapse-ckfyxdkmf0009hsuv54kfhf8v" class="collapse in " role="tabpanel"
-       aria-labelledby="heading-ckfyxdkmf0009hsuv54kfhf8v">
+  <div id="collapse-ckfyyhva8000gjkuv8b954srt" class="collapse in " role="tabpanel"
+       aria-labelledby="heading-ckfyyhva8000gjkuv8b954srt">
     
   
   
@@ -277,7 +277,7 @@
     <div class="category-sub row">
       <a
         class="category-subitem collapsed list-group-item category-item-action col-10 col-md-11"
-        id="heading-ckfyxdkmh000fhsuv9cy7f6de" role="tab" data-toggle="collapse" href="#collapse-ckfyxdkmh000fhsuv9cy7f6de"
+        id="heading-ckfyyhva9000jjkuv8qok9kez" role="tab" data-toggle="collapse" href="#collapse-ckfyyhva9000jjkuv8qok9kez"
         aria-expanded="false"
       >
         写作
@@ -290,8 +290,8 @@
       <div class="category-collapse">
         
           
-  <div id="collapse-ckfyxdkmh000fhsuv9cy7f6de" class="collapse in" role="tabpanel"
-       aria-labelledby="heading-ckfyxdkmh000fhsuv9cy7f6de">
+  <div id="collapse-ckfyyhva9000jjkuv8qok9kez" class="collapse in" role="tabpanel"
+       aria-labelledby="heading-ckfyyhva9000jjkuv8qok9kez">
     
     
     
@@ -366,6 +366,10 @@
       <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
         <span>Fluid</span></a>
     </div>-->
+          <div class="text-center">
+            <span id="timeDate">载入天数...</span>
+            <span id="times">载入时分秒...</span>
+          </div>
     
   <div class="statistics">
     
@@ -397,8 +401,8 @@
 
     
   </div>
-</footer>
 
+</footer>
 <!-- SCRIPTS -->
 <script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
 <script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
@@ -744,6 +748,35 @@
 
 
 
+<div>
+  <script>
+  var now = new Date();
+  function createtime(starTime,id,content){
+      var grt= new Date(starTime);//此处修改你的建站时间或者网站上线时间
+      now.setTime(now.getTime()+250);
+      days = (now - grt ) / 1000 / 60 / 60 / 24;
+      dnum = Math.floor(days);
+      hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum);
+      hnum = Math.floor(hours);
+      if(String(hnum).length ==1 ){
+          hnum = "0" + hnum;
+      }
+      minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+      mnum = Math.floor(minutes);
+      if(String(mnum).length ==1 ){
+                mnum = "0" + mnum;
+      }
+      seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+      snum = Math.round(seconds);
+      if(String(snum).length ==1 ){
+                snum = "0" + snum;
+      }
+      document.getElementById(id[0]).innerHTML = content+"&nbsp"+dnum+"&nbsp天";
+      document.getElementById(id[1]).innerHTML = hnum + "&nbsp小时&nbsp" + mnum + "&nbsp分&nbsp" + snum + "&nbsp秒";
+  }
+  setInterval("createtime('10/04/2020 11:08:01',['timeDate','times'],'本站安全运行')",300);
+  </script>
+</div>
 
 
 </body>
