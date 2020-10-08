@@ -1,0 +1,439 @@
+<!DOCTYPE html><html lang="zh-CN" data-default-color-scheme="&#34;auto&#34;"><head><meta charset="UTF-8"><link rel="apple-touch-icon" sizes="76x76" href="https://cdn.jsdelivr.net/gh/lkonx/lkonx.github.io@0.0.1/img/favicon.jpg"><link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/lkonx/lkonx.github.io@0.0.1/img/favicon.jpg"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="theme-color" content="#2f4154"><meta name="description" content=""><meta name="author" content="John Doe"><meta name="keywords" content=""><title>MySQL数据库(三) —— 数据的完整性 - lkonx</title><link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css"><link rel="stylesheet" href="/lib/hint/hint.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_pf9vaxs7x7b.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lkonx/lkonx.github.io@0.0.1/css/main.css"><script src="/js/utils.js"></script><script src="/js/color-schema.js"></script><meta name="generator" content="Hexo 5.2.0"></head><body><header style="height:70vh"><nav id="navbar" class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar"><div class="container"><a class="navbar-brand" href="/">&nbsp;<strong>lKonx</strong>&nbsp;</a> <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><div class="animated-icon"><span></span><span></span><span></span></div></button><div class="collapse navbar-collapse" id="navbarSupportedContent"><ul class="navbar-nav ml-auto text-center"><li class="nav-item"><a class="nav-link" href="/categories/"><i class="iconfont icon-category-fill"></i> 分类</a></li><li class="nav-item"><a class="nav-link" href="/tags/"><i class="iconfont icon-tags-fill"></i> 标签</a></li><li class="nav-item"><a class="nav-link" href="/archives/"><i class="iconfont icon-archive-fill"></i> 时间轴</a></li><li class="nav-item"><a class="nav-link" href="/about/"><i class="iconfont icon-user-fill"></i> 关于</a></li><li class="nav-item"><a class="nav-link" href="/links/"><i class="iconfont icon-link-fill"></i> 友链</a></li><li class="nav-item" id="search-btn"><a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i class="iconfont icon-search"></i>&nbsp;</a></li><li class="nav-item" id="color-toggle-btn"><a class="nav-link" href="javascript:">&nbsp;<i class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a></li></ul></div></div></nav><div class="banner intro-2" id="background" parallax="true" style="background:url(/images/2020-10-04.jpg) no-repeat center center;background-size:cover"><div class="full-bg-img"><div class="mask flex-center" style="background-color:rgba(0,0,0,.3)"><div class="container page-header text-center fade-in-up"><span class="h2" id="subtitle"></span><div class="mt-3"><span class="post-meta"><i class="iconfont icon-date-fill" aria-hidden="true"></i> <time datetime="2020-10-08 10:32" pubdate>2020年10月8日 上午</time></span></div><div class="mt-1"><span class="post-meta mr-2"><i class="iconfont icon-chart"></i> 3k 字 </span><span class="post-meta mr-2"><i class="iconfont icon-clock-fill"></i> 39 分钟 </span><span id="leancloud-post-views-container" class="post-meta" style="display:none"><i class="iconfont icon-eye" aria-hidden="true"></i> <span id="leancloud-post-views"></span> 次</span></div></div></div></div></div></header><main><div class="container-fluid"><div class="row"><div class="d-none d-lg-block col-lg-2"></div><div class="col-lg-8 nopadding-md"><div class="container nopadding-md" id="board-ctn"><div class="py-5" id="board"><article class="post-content mx-auto" id="post"><h1 style="display:none">MySQL数据库(三) —— 数据的完整性</h1><p class="note note-info">本文最后更新于：2020年10月8日 中午</p><div class="markdown-body" id="post-body"><h1 id="数据完整性"><a href="#数据完整性" class="headerlink" title="数据完整性"></a>数据完整性</h1><p><strong>数据的完整性保存到数据库中的数据都是正确的，数据的完整性可以分为三类: 实体完整性、域完整性、参照完整性，无论是哪一种完整性都是在创建表时给表添加约束即可。</strong></p><h1 id="实体完整性"><a href="#实体完整性" class="headerlink" title="实体完整性"></a>实体完整性</h1><p><strong>表中的一行数据就是一个实体（entity）保证实体完整性就是保证每一行数据的唯一性，约束类型：主键约束（primary key），唯一约束(unique)，自动增长列(auto_increment)</strong></p><h2 id="主键约束"><a href="#主键约束" class="headerlink" title="主键约束"></a>主键约束</h2><p><strong>主键用于唯一标识表中的每一条数据, 和现实生活中的身份证很像</strong></p><pre><code>create table person2(
+    id int primary key,
+    name varchar(20)
+);
+insert into person2 values (1, &#39;lkonx&#39;);
+insert into person2 values (2, &#39;lkonx&#39;);</code></pre><p><strong>主键的特征:</strong><br><strong>如果将某一个字段设置成了主键, 那么这个字段的取值就不能重复了<br>如果将某一个字段设置成了主键, 那么这个字段的取值就不能是null了<br>一张表中只能有一个主键, 不能出现多个主键</strong></p><pre><code>create table person3(
+    id int primary key,
+    name varchar(20) primary key
+);</code></pre><p><strong>我们除了可以在字段数据类型后面添加primary key,将这个字段变成主键以外,还可以通过在最后写上primary key(字段名称)的方式来指定主键</strong></p><pre><code>create table person3(
+    id int,
+    name varchar(20),
+    primary key(id)
+);
+insert into person3 values (1, &#39;lkonx&#39;);
+insert into person3 values (1, &#39;lkonx&#39;);</code></pre><h3 id="联合主键"><a href="#联合主键" class="headerlink" title="联合主键"></a>联合主键</h3><p>我们通过将表中的某个永远不重复的字段设置为主键, 从而达到保证每一行数据的唯一性(实体完整性)，但是在企业开发中有时候我们可能找不到不重复的字段, 此时我们还可以通过联合主键的方式来保证每一行数据的唯一性，联合主键就是同时将多个字段作为一个主键来使用</p><pre><code> ___________
+|name  | age|
+|lkonx | 88 |
+|zs    | 88 |
+|lkonx | 33 |
+
+create table person(
+    name varchar(20),
+    age int,
+    primary key(name, age)
+);
+insert into person values (&#39;lkonx&#39;, 88);
+insert into person values (&#39;lkonx&#39;, 88);</code></pre><p><strong>注意点:<br>联合主键并不是添加多个主键, 而是将多个字段的值作为主键来使用<br>也就是过去我们指定id为主键, 那么id的取值不能重复<br>而现在如果我们指定 name和age为主键, 那么name+age的值不能重复</strong></p><h2 id="唯一约束"><a href="#唯一约束" class="headerlink" title="唯一约束"></a>唯一约束</h2><p><strong>唯一约束用于保证某个字段的值永远不重复</strong></p><pre><code>create table person(
+    id int unique,
+    name varchar(20)
+);
+insert into person values (1, &#39;lkonx&#39;);
+insert into person values (1, &#39;lkonx&#39;);</code></pre><p><strong>主键和唯一键异同:<br>唯一约束和主键约束一样, 被约束的字段的取值都不能够重复<br>主键在一张表中只能有一个, 而唯一约束在一张表中可以有多个</strong></p><pre><code>create table person2(
+    id int unique,
+    name varchar(20) unique
+);
+insert into person2 values (1, &#39;lkonx&#39;);
+insert into person2 values (2, &#39;lkonx&#39;);</code></pre><p><strong>主键的取值不能为Null, 而唯一约束的取值可以是Null</strong></p><h2 id="自动增长约束"><a href="#自动增长约束" class="headerlink" title="自动增长约束"></a>自动增长约束</h2><p><strong>自动增长约束的作用是让某个字段的取值从1开始递增, 从而保证实体完整性</strong></p><pre><code>create table person(
+    id int auto_increment,
+    name varchar(20)
+);
+#Incorrect table definition; there can be only one auto column and it must be defined as a key</code></pre><p><strong>注意点:<br>如果某个字段是自动增长的, 那么这个字段必须是主键才可以</strong></p><pre><code>create table person(
+    id int auto_increment primary key,
+    name varchar(20)
+);
+insert into person values (1, &#39;lkonx&#39;);</code></pre><p><strong>如果仅仅是主键, 那么取值不能是null, 但是如果主键还是自动增长的, 那么取值就可以是null或者default</strong></p><p><strong>在企业开发中选择主键<br>最少性: 能用一个字段作为主键, 就不要使用多个字段<br>稳定性: 能用不被操作(修改)的字段作为主键, 就不要使用会被操作的字段作为主键<br>一般情况下我们会定义一个名称叫做id的字段, 并且这个字段是整型的, 并且这个字段是自动增长的来作为主键</strong></p><h2 id="如何修改约束"><a href="#如何修改约束" class="headerlink" title="如何修改约束"></a>如何修改约束</h2><p><strong>修改主键约束</strong></p><p><strong>alter table 表名 add primary key(字段);</strong></p><pre><code>create table person(
+    id int,
+    name varchar(20)
+);
+alter table person add primary key(id);
+insert into person values (1, &#39;lkonx&#39;);</code></pre><p>修改唯一约束</p><p><strong>alter table 表名 add unique(字段);</strong></p><pre><code>create table person2(
+    id int,
+    name varchar(20)
+);
+alter table person2 add unique(name);
+insert into person2 values (1, &#39;lkonx&#39;);</code></pre><p><strong>修改自动增长约束</strong></p><p><strong>alter table 表名 modify 字段名称 数据类型 auto_increment;</strong></p><pre><code>create table person3(
+    id int,
+    name varchar(20)
+);
+alter table person3 modify id int auto_increment;
+insert into person3 values (null, &#39;lkonx&#39;);</code></pre><h1 id="域完整性"><a href="#域完整性" class="headerlink" title="域完整性"></a>域完整性</h1><p><strong>一行数据中的每个单元格都是一个域, 保证域的完整性就是保证每个单元格数据的正确性</strong></p><p><strong>例如: 人的年龄不可能超过255岁, 而且不能是负数, 所以我们就可以使用 TINYINT UNSIGNED</strong></p><p><strong>例如: 人的性别只能是男/女或者妖, 所以就可以使用枚举类型</strong></p><p><strong>例如: 要存储比较多的文字, 为了保证不超出每一行最大的存储限制,我们就可以使用大文本类型</strong></p><p><strong>使用非空约束（not null）使用默认值约束(default)</strong></p><pre><code>create table person(
+    id int,
+    name varchar(20) not null
+);
+insert into person values (1, null);
+
+create table person2(
+    id int,
+    name varchar(20) default &#39;it666&#39;
+);
+insert into person2 values (1, null);
+insert into person2 values (1, default);
+insert into person2 values (1, &#39;zs&#39;);</code></pre><p><strong>注意点: 哪怕设置了默认值, 传入null之后也不会使用默认值</strong></p><h1 id="参照完整性"><a href="#参照完整性" class="headerlink" title="参照完整性"></a>参照完整性</h1><p><strong>参照完整性又称引用完整性, 主要用于保证多表之间引用关系的正确性</strong></p><h2 id="使用多表"><a href="#使用多表" class="headerlink" title="使用多表"></a>使用多表</h2><p><strong>定义一张表保存2个学生3门课程的成绩</strong></p><pre><code>|---------------------------------|
+| id | name | gender | km | score |
+| 1  | 张三 |   男   |语文|  100  |
+| 2  | 张三 |   男   |数学|   99  |
+| 3  | 张三 |   男   |英语|   98  |
+| 4  | 李四 |   女   |语文|   60  |
+| 5  | 李四 |   女   |数学|   59  |
+| 6  | 李四 |   女   |英语|   58  |
+|---------------------------------|</code></pre><p><strong>如果将所有的数据都放到一张表中, 会出现大量冗余数据<br>所以为了降低数据库的体积, 提升数据库的效率, 我们需要根据自身需求对表进行拆分</strong></p><pre><code>|--------------------|      |-----------------------|
+| id | name | gender |      | id | km | score | uid |
+| 1  | 张三 |   男   |      |  1 |语文|  100  |  1  |
+| 2  | 李四 |   女   |      |  2 |数学|   99  |  1  |
+|--------------------|      |  3 |英语|   98  |  1  |
+                            |  4 |语文|   60  |  2  |
+                            |  5 |数学|   59  |  2  |
+                            |  6 |英语|   58  |  2  |
+                            |-----------------------|</code></pre><h2 id="冗余数据"><a href="#冗余数据" class="headerlink" title="冗余数据"></a>冗余数据</h2><p><strong>表与表之间的关系可以分为三种: 一对一、一对多、多对多</strong></p><h3 id="一对一"><a href="#一对一" class="headerlink" title="一对一"></a>一对一</h3><p><strong>一夫一妻制</strong></p><pre><code>|-----------------------------|
+| id | name | gender | mateId |
+| 1  | 张三 |   男   |    2   |
+| 2  | 李四 |   女   |    1   |
+| 3  | 王五 |   男   |    4   |
+| 4  | 赵六 |   女   |    2   |
+|-----------------------------|</code></pre><h3 id="一对多"><a href="#一对多" class="headerlink" title="一对多"></a>一对多</h3><p><strong>一个人有多个汽车，一个班有多个学生，一个人有多们成绩</strong></p><pre><code>|---------------------------------|
+| id | name | gender | km | score |
+| 1  | 张三 |   男   |语文|  100  |
+| 2  | 张三 |   男   |数学|   99  |
+| 3  | 张三 |   男   |英语|   98  |
+| 4  | 李四 |   女   |语文|   60  |
+| 5  | 李四 |   女   |数学|   59  |
+| 6  | 李四 |   女   |英语|   58  |
+|---------------------------------|
+
+|--------------------|      |-----------------------|
+| id | name | gender |      | id | km | score | uid |
+| 1  | 张三 |   男   |      |  1 |语文|  100  |  1  |
+| 4  | 李四 |   女   |      |  2 |数学|   99  |  1  |
+|--------------------|      |  3 |英语|   98  |  1  |
+                            |  4 |语文|   60  |  2  |
+                            |  5 |数学|   59  |  2  |
+                            |  6 |英语|   58  |  2  |
+                            |-----------------------|</code></pre><h3 id="多对多"><a href="#多对多" class="headerlink" title="多对多"></a>多对多</h3><p><strong>一个学生有多个老师, 一个老师有多个学生</strong></p><pre><code>|--------------------------------------------|
+| id | stuName | gender | teacherName | 性别 |
+| 1  |   张三  |   男   |     王五    |  男  |
+| 2  |   张三  |   男   |     赵六    |  女  |
+| 3  |   张三  |   男   |     周七    |  男  |
+| 4  |   李四  |   女   |     王五    |  男  |
+| 5  |   李四  |   女   |     赵六    |  女  |
+| 6  |   李四  |   女   |     周七    |  男  |
+|--------------------------------------------|
+
+|-----------------------|  |---------------------|   |-----------------------|
+| id | stuName | gender |  | stuId  | teacherId  |   | id | stuName | gender |
+| 1  |   张三  |   男   |  |    1   |     1      |   | 1  |   王五  |   男   |
+| 2  |   李四  |   女   |  |    1   |     2      |   | 2  |   赵六  |   女   |
+|-----------------------|  |    1   |     3      |   | 3  |   周七  |   男   |
+                           |    2   |     1      |   |-----------------------|
+                           |    2   |     2      |
+                           |    2   |     3      |
+                           |---------------------|</code></pre><h2 id="保证参照完整性"><a href="#保证参照完整性" class="headerlink" title="保证参照完整性"></a>保证参照完整性</h2><p><strong>默认情况下表与表之间是独立存在的, 不会相互影响，也正是因为如此, 默认情况下也不会检查表与表之间的依赖关系，所以为了保证表与表之间参照完整性, 我们可以通过’外键’来保证参照完整性</strong></p><pre><code>create table stu(
+    id int auto_increment primary key,
+    name varchar(20),
+    gender enum(&#39;男&#39;,&#39;女&#39;,&#39;妖&#39;)
+);
+create table grade(
+    id int auto_increment primary key,
+    km varchar(20),
+    score double,
+    uid int
+);</code></pre><h3 id="外键"><a href="#外键" class="headerlink" title="外键"></a>外键</h3><p><strong>什么是外键?</strong><br><strong>如果一张表中有一个字段指向了别一张表中的主键，就将该字段叫做外键<br>例如: 成绩表中的uid引用了学生表中的id, 那么成绩表中的uid我们就称之为外键</strong></p><pre><code>|--------------------|      |-----------------------|
+| id | name | gender |      | id | km | score | uid |
+| 1  | 张三 |   男   |      |  1 |语文|  100  |  1  |
+| 2  | 李四 |   女   |      |  2 |数学|   99  |  1  |
+|--------------------|      |  3 |英语|   98  |  1  |
+                            |  4 |语文|   60  |  2  |
+                            |  5 |数学|   59  |  2  |
+                            |  6 |英语|   58  |  2  |
+                            |-----------------------|
+
+create table grade2(
+    id int auto_increment primary key,
+    km varchar(20),
+    score double,
+    uid int,
+    foreign key(uid) references stu(id)
+);</code></pre><p><strong>注意点:</strong><br><strong>只有InnoDB的存储引擎才支持外键约束</strong></p><p><strong>外键的数据类型必须和指向的主键一样</strong></p><p><strong>在一对多的关系中, 外键一般定义在多的一方(一个学生有多门成绩, 那么外键定义在成绩表中)</strong></p><p><strong>定义外键的表我们称之为从表, 被外键引用的表我们称之为主表</strong></p><h4 id="创建表时定义外键"><a href="#创建表时定义外键" class="headerlink" title="创建表时定义外键"></a>创建表时定义外键</h4><pre><code>foreign key(外键字段名称) references 主表名称(主表主键名称);</code></pre><h3 id="动态添加外键"><a href="#动态添加外键" class="headerlink" title="动态添加外键"></a>动态添加外键</h3><p><strong>alter table 从表名称 add foreign key(外键字段名称) references</strong> 主表名称(主表主键名称);</p><pre><code>create table grade(
+    id int auto_increment primary key,
+    km varchar(20),
+    score double,
+    uid int
+);
+alter table grade add foreign key(uid) references stu(id);</code></pre><h3 id="查看外键"><a href="#查看外键" class="headerlink" title="查看外键"></a>查看外键</h3><p>show create table 从表名称;</p><pre><code>show create table grade;
+
+CREATE TABLE `grade` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `km` varchar(20) DEFAULT NULL,
+  `score` double DEFAULT NULL,
+  `uid` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `uid` (`uid`),
+  CONSTRAINT `grade_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `stu` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8</code></pre><p><strong>注意点:</strong></p><p><strong>CONSTRAINT <code>grade_ibfk_1</code> FOREIGN KEY (<code>uid</code>) REFERENCES <code>stu</code> (<code>id</code>)含义是将uid变成外键, 外键的名称是grade_ibfk_1</strong></p><p><strong>uid的取值引用的是stu这张表中的id字段的值</strong></p><h3 id="动态删除外键"><a href="#动态删除外键" class="headerlink" title="动态删除外键"></a>动态删除外键</h3><p>alter table 从表名称 drop foreign key 外键名称;</p><pre><code>alter table grade drop foreign key grade_ibfk_1;</code></pre><h3 id="外键的操作"><a href="#外键的操作" class="headerlink" title="外键的操作"></a>外键的操作</h3><h4 id="严格操作"><a href="#严格操作" class="headerlink" title="严格操作"></a>严格操作</h4><p><strong>主表不存在对应数据,从表不允许添加</strong><br><strong>从表引用着数据,主表不允许删除</strong><br><strong>从表引用这数据, 主表不允许修改</strong></p><h4 id="置空操作-null"><a href="#置空操作-null" class="headerlink" title="置空操作(null)"></a>置空操作(null)</h4><p><strong>在企业开发中, 我们可能必须要删除主表中的数据,但是如果主表被删除了从表就不完整了，所以在企业开发中, 我们可以通过置空操作, 在删除主表数据的同时删除从表关联的数据</strong></p><pre><code>create table grade2(
+    id int auto_increment primary key,
+    km varchar(20),
+    score double,
+    uid int,
+    foreign key(uid) references stu(id) on delete set null
+);</code></pre><h4 id="级联操作-cascade"><a href="#级联操作-cascade" class="headerlink" title="级联操作(cascade)"></a>级联操作(cascade)</h4><p>在企业开发中, 我们可能必须要修改主表中的数据,但是如果主表被修改了从表就不完整了，所以在企业开发中, 我们可以通过’级联操作’, 在修改主表数据的同时修改从表关联的数据</p><pre><code>create table grade3(
+    id int auto_increment primary key,
+    km varchar(20),
+    score double,
+    uid int,
+    foreign key(uid) references stu(id) on update cascade
+);</code></pre><p><strong>[constraint 外键名称] foreign key(外键字段) references 主表(主键) [主表删除的动作] [主表更新的动作]</strong><br><strong>一般情况下主表删除时从表置空, 主表更新时从表级联</strong></p><h3 id="多对多外键"><a href="#多对多外键" class="headerlink" title="多对多外键"></a>多对多外键</h3><pre><code>        学生表                     关系表                     教师表
+|-----------------------|  |---------------------|   |-----------------------|
+| id | stuName | gender |  | stuId  | teacherId  |   | id | stuName | gender |
+| 1  |   张三  |   男   |  |    1   |     1      |   | 1  |   王五  |   男   |
+| 2  |   李四  |   女   |  |    1   |     2      |   | 2  |   赵六  |   女   |
+|-----------------------|  |    1   |     3      |   | 3  |   周七  |   男   |
+                           |    2   |     1      |   |-----------------------|
+                           |    2   |     2      |
+                           |    2   |     3      |
+                           |---------------------|
+
+create table stu(
+    id int auto_increment primary key,
+    name varchar(20),
+    gender enum(&#39;男&#39;,&#39;女&#39;,&#39;妖&#39;)
+);
+insert into stu values (null, &#39;张三&#39;, &#39;男&#39;);
+insert into stu values (null, &#39;李四&#39;, &#39;女&#39;);
+
+create table teacher(
+    id int auto_increment primary key,
+    name varchar(20),
+    gender enum(&#39;男&#39;,&#39;女&#39;,&#39;妖&#39;)
+);
+insert into teacher values (null, &#39;王五&#39;, &#39;男&#39;);
+insert into teacher values (null, &#39;赵六&#39;, &#39;女&#39;);
+insert into teacher values (null, &#39;周七&#39;, &#39;男&#39;);
+
+create table rel(
+    stuId int,
+    teacherId int
+);
+insert into rel values (1, 1);
+insert into rel values (1, 2);
+insert into rel values (1, 3);
+insert into rel values (2, 1);
+insert into rel values (2, 2);
+insert into rel values (2, 3);
+
+alter table rel add foreign key(stuId) references stu(id);
+alter table rel add foreign key(teacherId) references teacher(id);
+
+insert into rel values (3, 1);#报错
+insert into rel values (1, 4);#报错</code></pre></div><hr><div><div class="post-metas mb-3"><div class="post-meta mr-3"><i class="iconfont icon-category"></i> <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a> <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/">MySQL</a></div><div class="post-meta"><i class="iconfont icon-tags"></i> <a class="hover-with-bg" href="/tags/%E6%8A%80%E6%9C%AF/">技术</a></div></div><p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p><div class="post-prevnext row"><article class="post-prev col-6"></article><article class="post-next col-6"><a href="/2020/10/07/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%BA%8C)/"><span class="hidden-mobile">MySQL数据库(二) —— 数据类型</span> <span class="visible-mobile">下一篇</span> <i class="iconfont icon-arrowright"></i></a></article></div></div><article class="comments" id="comments"><div id="vcomments"></div><script type="text/javascript">function loadValine(){addScript("https://cdn.staticfile.org/valine/1.4.14/Valine.min.js",function(){new Valine({el:"#vcomments",app_id:"8dhQ3bEe7FYkMkggQoubXDQg-gzGzoHsz",app_key:"9SS0qYOiCUKe2glDcEkf5Wzu",placeholder:"评论后 记得给我留言哦~",path:window.location.pathname,avatar:"retro",meta:["nick","mail"],pageSize:"10",lang:"zh-CN",highlight:!0,recordIP:!1,serverURLs:"https://8dhq3bee.lc-cn-n1-shared.com"})})}waitElementVisible("vcomments",loadValine)</script><noscript>Please enable JavaScript to view the <a target="_blank" href="https://valine.js.org" rel="nofollow noopener noopener">comments powered by Valine.</a></noscript></article></article></div></div></div><div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn"><div id="toc"><p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p><div id="tocbot"></div></div></div></div></div></main><a id="scroll-top-button" href="#" role="button"><i class="iconfont icon-arrowup" aria-hidden="true"></i></a><div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-lg" role="document"><div class="modal-content"><div class="modal-header text-center"><h4 class="modal-title w-100 font-weight-bold">搜索</h4><button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body mx-3"><div class="md-form mb-5"><input type="text" id="local-search-input" class="form-control validate"> <label data-error="x" data-success="v" for="local-search-input">关键词</label></div><div class="list-group" id="local-search-result"></div></div></div></div></div><footer class="mt-5"><div class="text-center py-3"><div class="text-center"><span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span></div><div class="statistics"><span id="leancloud-site-pv-container" style="display:none">总访问量 <span id="leancloud-site-pv"></span> 次 </span><span id="leancloud-site-uv-container" style="display:none">总访客数 <span id="leancloud-site-uv"></span> 人</span></div></div></footer><script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script><script src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script><script src="/js/debouncer.js"></script><script src="/js/main.js"></script><script src="/js/lazyload.js"></script><script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js"></script><script src="/js/clipboard-use.js"></script><script defer>(function () {
+    // 查询存储的记录
+    function getRecord(Counter, target) {
+      return new Promise(function (resolve, reject) {
+        Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({target})))
+          .then(resp => resp.json())
+          .then(({results, code, error}) => {
+            if (code === 401) {
+              throw error;
+            }
+            if (results && results.length > 0) {
+              var record = results[0];
+              resolve(record);
+            } else {
+              Counter('post', '/classes/Counter', {target, time: 0})
+                .then(resp => resp.json())
+                .then((record, error) => {
+                  if (error) {
+                    throw error;
+                  }
+                  resolve(record);
+                }).catch(error => {
+                console.error('Failed to create', error);
+                reject(error);
+              });
+            }
+          }).catch((error) => {
+          console.error('LeanCloud Counter Error:', error);
+          reject(error);
+        });
+      })
+    }
+
+    // 发起自增请求
+    function increment(Counter, incrArr) {
+      return new Promise(function (resolve, reject) {
+        Counter('post', '/batch', {
+          "requests": incrArr
+        }).then((res) => {
+          res = res.json();
+          if (res.error) {
+            throw res.error;
+          }
+          resolve(res);
+        }).catch((error) => {
+          console.error('Failed to save visitor count', error);
+          reject(error);
+        });
+      });
+    }
+
+    // 构建自增请求体
+    function buildIncrement(objectId) {
+      return {
+        "method": "PUT",
+        "path": `/1.1/classes/Counter/${ objectId }`,
+        "body": {
+          "time": {
+            '__op': 'Increment',
+            'amount': 1
+          }
+        }
+      }
+    }
+
+    // 校验是否为有效的 UV
+    function validUV() {
+      var key = 'LeanCloud_UV_Flag';
+      var flag = localStorage.getItem(key);
+      if (flag) {
+        // 距离标记小于 24 小时则不计为 UV
+        if (new Date().getTime() - parseInt(flag) <= 86400000) {
+          return false;
+        }
+      }
+      localStorage.setItem(key, new Date().getTime().toString());
+      return true;
+    }
+
+    function addCount(Counter) {
+      var enableIncr = 'true' === 'true' && window.location.hostname !== 'localhost';
+      var getterArr = [];
+      var incrArr = [];
+
+      // 请求 PV 并自增
+      var pvCtn = document.querySelector('#leancloud-site-pv-container');
+      if (pvCtn || enableIncr) {
+        var pvGetter = getRecord(Counter, 'site-pv').then((record) => {
+          incrArr.push(buildIncrement(record.objectId))
+          var ele = document.querySelector('#leancloud-site-pv');
+          if (ele) {
+            ele.innerText = record.time + 1;
+            if (pvCtn) {
+              pvCtn.style.display = 'inline';
+            }
+          }
+        });
+        getterArr.push(pvGetter);
+      }
+
+      // 请求 UV 并自增
+      var uvCtn = document.querySelector('#leancloud-site-uv-container');
+      if (uvCtn || enableIncr) {
+        var uvGetter = getRecord(Counter, 'site-uv').then((record) => {
+          var vuv = validUV();
+          vuv && incrArr.push(buildIncrement(record.objectId))
+          var ele = document.querySelector('#leancloud-site-uv');
+          if (ele) {
+            ele.innerText = record.time + (vuv ? 1 : 0);
+            if (uvCtn) {
+              uvCtn.style.display = 'inline';
+            }
+          }
+        });
+        getterArr.push(uvGetter);
+      }
+
+      // 如果是文章，请求文章的浏览数，并自增
+      if ('true' === 'true') {
+        var viewCtn = document.querySelector('#leancloud-post-views-container');
+        if (viewCtn || enableIncr) {
+          var target = decodeURI('/2020/10/08/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%B8%89)/');
+          var viewGetter = getRecord(Counter, target).then((record) => {
+            incrArr.push(buildIncrement(record.objectId))
+            if (viewCtn) {
+              var ele = document.querySelector('#leancloud-post-views');
+              if (ele) {
+                ele.innerText = (record.time || 0) + 1;
+                viewCtn.style.display = 'inline';
+              }
+            }
+          });
+          getterArr.push(viewGetter);
+        }
+      }
+
+      // 如果启动计数自增，批量发起自增请求
+      if (enableIncr) {
+        Promise.all(getterArr).then(() => {
+          incrArr.length > 0 && increment(Counter, incrArr);
+        })
+      }
+    }
+
+    var app_id = '8dhQ3bEe7FYkMkggQoubXDQg-gzGzoHsz'
+    var app_key = '9SS0qYOiCUKe2glDcEkf5Wzu'
+    var server_url = 'https://8dhq3bee.lc-cn-n1-shared.com'
+
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${ api_server }/1.1${ url }`, {
+          method,
+          headers: {
+            'X-LC-Id': app_id,
+            'X-LC-Key': app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+
+      addCount(Counter);
+    }
+
+    var api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${ app_id.slice(0, 8).toLowerCase() }.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(resp => resp.json())
+        .then(({api_server}) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();</script><script src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js"></script><script>$(document).ready(function(){var t=$("#board-ctn").offset().top;tocbot.init({tocSelector:"#tocbot",contentSelector:"#post-body",headingSelector:"h1,h2,h3,h4,h5,h6",linkClass:"tocbot-link",activeLinkClass:"tocbot-active-link",listClass:"tocbot-list",isCollapsedClass:"tocbot-is-collapsed",collapsibleClass:"tocbot-is-collapsible",collapseDepth:0,scrollSmooth:!0,headingsOffset:-t}),0<$(".toc-list-item").length&&$("#toc").css("visibility","visible")})</script><script src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js"></script><script>var typed=new Typed("#subtitle",{strings:["  ","MySQL数据库(三) —— 数据的完整性&nbsp;"],cursorChar:"_",typeSpeed:70,loop:!1});typed.stop(),$(document).ready(function(){$(".typed-cursor").addClass("h2"),typed.start()})</script><script src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js"></script><script>anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))</script><script src="/js/local-search.js"></script><script>var path="/local-search.xml",inputArea=document.querySelector("#local-search-input");inputArea.onclick=function(){searchFunc(path,"local-search-input","local-search-result"),this.onclick=null}</script><script src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js"></script><link rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css"><script>$("#post img:not(.no-zoom img, img[no-zoom]), img[zoom]").each(function(){var t=document.createElement("a");$(t).attr("data-fancybox","images"),$(t).attr("href",$(this).attr("src")),$(this).wrap(t)})</script><script>MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        options: {
+          renderActions: {
+            findScript: [10, doc => {
+              document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                const display = !!node.type.match(/; *mode=display/);
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                const text = document.createTextNode('');
+                node.parentNode.replaceChild(text, node);
+                math.start = { node: text, delim: '', n: 0 };
+                math.end = { node: text, delim: '', n: 0 };
+                doc.math.push(math);
+              });
+            }, '', false],
+            insertedScript: [200, () => {
+              document.querySelectorAll('mjx-container').forEach(node => {
+                let target = node.parentNode;
+                if (target.nodeName.toLowerCase() === 'li') {
+                  target.parentNode.classList.add('has-jax');
+                }
+              });
+            }, '', false]
+          }
+        }
+      };</script><script async src="https://cdn.staticfile.org/mathjax/3.0.5/es5/tex-svg.js"></script><script>!function(e,r,t){var o,n=[];e.requestAnimationFrame=e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame||function(e){setTimeout(e,1e3/60)},function(t){var a=r.createElement("style");a.type="text/css";try{a.appendChild(r.createTextNode(t))}catch(e){a.styleSheet.cssText=t}r.getElementsByTagName("head")[0].appendChild(a)}(".heart{width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: fixed;}.heart:after{top: -5px;}.heart:before{left: -5px;}"),o="function"==typeof e.onclick&&e.onclick,e.onclick=function(e){var t,a;o&&o(),t=e,(a=r.createElement("div")).className="heart",n.push({el:a,x:t.clientX-5,y:t.clientY-5,scale:1,alpha:1,color:"rgb("+~~(255*Math.random())+","+~~(255*Math.random())+","+~~(255*Math.random())+")"}),r.body.appendChild(a)},function e(){for(var t=0;t<n.length;t++)n[t].alpha<=0?(r.body.removeChild(n[t].el),n.splice(t,1)):(n[t].y--,n[t].scale+=.004,n[t].alpha-=.013,n[t].el.style.cssText="left:"+n[t].x+"px;top:"+n[t].y+"px;opacity:"+n[t].alpha+";transform:scale("+n[t].scale+","+n[t].scale+") rotate(45deg);background:"+n[t].color+";z-index:99999");requestAnimationFrame(e)}()}(window,document)</script><script>!function(e,t,o,a,c,i,n){e.DaoVoiceObject=c,e[c]=e[c]||function(){(e[c].q=e[c].q||[]).push(arguments)},e[c].l=1*new Date,i=t.createElement(o),n=t.getElementsByTagName(o)[0],i.async=1,i.src=a,i.charset="utf-8",n.parentNode.insertBefore(i,n)}(window,document,"script",("https:"===document.location.protocol?"https:":"http:")+"//widget.daovoice.io/widget/ae1a492f.js","daovoice"),daovoice("init",{app_id:"ae1a492f"}),daovoice("update")</script><div><script>var now=new Date;function createtime(n,m,e){var t=new Date(n);now.setTime(now.getTime()+250),days=(now-t)/1e3/60/60/24,dnum=Math.floor(days),hours=(now-t)/1e3/60/60-24*dnum,hnum=Math.floor(hours),1==String(hnum).length&&(hnum="0"+hnum),minutes=(now-t)/1e3/60-1440*dnum-60*hnum,mnum=Math.floor(minutes),1==String(mnum).length&&(mnum="0"+mnum),seconds=(now-t)/1e3-86400*dnum-3600*hnum-60*mnum,snum=Math.round(seconds),1==String(snum).length&&(snum="0"+snum),document.getElementById(m[0]).innerHTML=e+"&nbsp"+dnum+"&nbsp天",document.getElementById(m[1]).innerHTML=hnum+"&nbsp小时&nbsp"+mnum+"&nbsp分&nbsp"+snum+"&nbsp秒"}setInterval("createtime('10/04/2020 11:08:01',['timeDate','times'],'本站安全运行')",300)</script></div></body></html>
