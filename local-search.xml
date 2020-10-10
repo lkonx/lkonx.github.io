@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>MySQL数据库(五) —— 事务</title>
+    <link href="/2020/10/10/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%BA%94)/"/>
+    <url>/2020/10/10/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%BA%94)/</url>
+    
+    <content type="html"><![CDATA[<h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><p><strong>MySQL中的事务主要用于处理容易出错的数据。事务可以用来维护数据库的完整性，保证成批的 SQL 语句要么全部执行，要么全部不执行。用来管理 insert,update,delete语句。MySQL中只有使用了 Innodb 数据库引擎的表才支持事务。</strong></p><h1 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h1><p><strong>开启事务: start transaction<br>提交事务: commit<br>回滚事务: rollback</strong></p><pre><code>start transaction; // 开启事务SQL语句;rollback; // 任务失败, 回滚到开启之前状态SQL语句;commit; // 任务成功, 提交开启事务之后所有操作</code></pre><p><strong>注意点:<br>事务的本质是开启事务的时候拷贝一张一模一样的表，然后执行相关的操作都是在拷贝的这张表中做操作，如果失败了,如果执行了rollback,那么系统就会自动删除拷贝的这张表，所以失败了不会影响到原有的数据如果成功了,如果执行了commit,那么系统就会自动利用拷贝表中最新的数据覆盖原有表中的数据，所以成功了会影响到原有的数据</strong></p><h1 id="回滚点"><a href="#回滚点" class="headerlink" title="回滚点"></a>回滚点</h1><p><strong>savepoint 回滚点名称<br>rollback to 回滚点名称</strong></p><pre><code>start transaction;SQL语句;savepoint abc;SQL语句;savepoint def;SQL语句;rollback to abc;</code></pre><h1 id="事务特点"><a href="#事务特点" class="headerlink" title="事务特点"></a>事务特点</h1><h2 id="原子"><a href="#原子" class="headerlink" title="原子"></a>原子</h2><p><strong>事务开启后的所有操作，要么全部成功，要么全部失败，不可能出现部分成功的情况<br>事务执行过程中如果出错，哪怕我们不手动回滚, 系统也会自动帮我们回滚</strong></p><h2 id="一致性"><a href="#一致性" class="headerlink" title="一致性"></a>一致性</h2><p><strong>事务开始前和结束后，数据库的完整性约束没有被破坏<br>例如 A向B转账，不可能A扣了钱，B却没收到</strong></p><h2 id="持久性"><a href="#持久性" class="headerlink" title="持久性"></a>持久性</h2><p><strong>事务完成后，事务对数据库的所有操作是永久的, 操作完成之后就不能再回滚</strong></p><h2 id="隔离性"><a href="#隔离性" class="headerlink" title="隔离性"></a>隔离性</h2><p><strong>数据库允许多个并发事务同时对其数据进行读写和修改的能力，隔离性可以防止多个事务并发时由于交叉执行而导致数据的不一致。</strong></p><h3 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h3><p><strong>读未提交（read uncommitted）: 一个事务可以读取另一个未提交事务的数据<br>读提交（read committed）: 一个事务要等另一个事务提交后才能读取数据<br>可重复读（repeatable read）: 一个事务范围内多个相同的查询返回相同的结果<br>串行化（serializable）: 前面一个事务没有执行完后面一个事务不能执行</strong></p><h4 id="查看隔离级别"><a href="#查看隔离级别" class="headerlink" title="查看隔离级别"></a>查看隔离级别</h4><pre><code>全局的: select @@global.transaction_isolation;当前会话的: select @@transaction_isolation;</code></pre><h4 id="设置隔离级别"><a href="#设置隔离级别" class="headerlink" title="设置隔离级别"></a>设置隔离级别</h4><pre><code>全局的: set global transaction isolation level 级别名称;当前会话: set session transaction isolation level 级别名称;</code></pre><h3 id="脏读"><a href="#脏读" class="headerlink" title="脏读"></a>脏读</h3><p><strong>读取到其它事务没有提交的数据</strong></p><p>A客户端:</p><pre><code>set session transaction isolation level read uncommitted;start transaction;update bank set money=money-1000 where cardId=&#39;1002&#39;;select * from bank;</code></pre><p>B客户端:</p><pre><code>set session transaction isolation level read uncommitted;select * from bank;</code></pre><p><strong>解决办法(read committed)</strong></p><p>A客户端:</p><pre><code>set session transaction isolation level read committed;start transaction;update bank set money=money-1000 where cardId=&#39;1002&#39;;select * from bank;</code></pre><p>B客户端:</p><pre><code>set session transaction isolation level read committed;select * from bank;</code></pre><h3 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h3><p><strong>一个事务范围内多次查询的结果不同</strong></p><p>A客户端:</p><pre><code>set session transaction isolation level read committed;start transaction;select * from bank;</code></pre><p>B客户端:</p><pre><code>set session transaction isolation level read committed;start transaction;update bank set money=money-1000 where cardId=&#39;1002&#39;;commit;</code></pre><p>A客户端:</p><pre><code>select * from bank;commit;</code></pre><p><strong>解决办法(repeatable read)</strong></p><h3 id="重复读"><a href="#重复读" class="headerlink" title="重复读"></a>重复读</h3><p><strong>一个事务范围内多次查询的结果相同</strong></p><p>A客户端:</p><pre><code>set session transaction isolation level repeatable read;start transaction;select * from bank;</code></pre><p>B客户端:</p><pre><code>set session transaction isolation level repeatable read;start transaction;update bank set money=money-1000 where cardid=&#39;1002&#39;;commit;</code></pre><p>A客户端:</p><pre><code>select * from bank;commit;</code></pre><p><strong>解决办法(serializable)</strong></p><h3 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h3><p><strong>读到到的结果并不是最终的结果</strong><br>A客户端:</p><pre><code>set session transaction isolation level serializable;start transaction;select * from bank;</code></pre><p>B客户端:</p><pre><code>set session transaction isolation level serializable;start transaction;update bank set money=money-1000 where cardid=&#39;1002&#39;;commit;</code></pre><p>A客户端:</p><pre><code>select * from bank;commit;</code></pre><h3 id="对应关系"><a href="#对应关系" class="headerlink" title="对应关系"></a>对应关系</h3><pre><code>事务隔离级别                    脏读   不可重复读    幻读读未提交（read-uncommitted）    是           是      是不可重复读（read-committed）    否           是      是可重复读（repeatable-read）     否           否      是串行化（serializable）          否           否      否</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>数据库</category>
+      
+      <category>MySQL</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>技术</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MySQL数据库(四) —— 数据查询</title>
     <link href="/2020/10/09/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E5%9B%9B)/"/>
     <url>/2020/10/09/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E5%9B%9B)/</url>
