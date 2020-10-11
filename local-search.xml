@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>MySQL数据库(六) —— 视图</title>
+    <link href="/2020/10/11/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E5%85%AD)/"/>
+    <url>/2020/10/11/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E5%85%AD)/</url>
+    
+    <content type="html"><![CDATA[<h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p><strong>视图本质就是将结果集缓存起来<br>由于结果集是一张虚拟的表, 所以视图也是一张虚拟的表<br>由于结果集是建立在表的基础上的, 所以视图也是建立在表的基础上的</strong></p><h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><p>视图可以用来简化SQL语句<br>视图可以用来隐藏表的结构<br>视图可以用来提升数据安全性</p><h1 id="创建视图语法"><a href="#创建视图语法" class="headerlink" title="创建视图语法"></a>创建视图语法</h1><pre><code>create view 视图名称 as select 语句;</code></pre><h2 id="视图数据操作"><a href="#视图数据操作" class="headerlink" title="视图数据操作"></a>视图数据操作</h2><p><strong>注意点:<br>由于视图保存的是结果集, 由于结果集是基于原始表的,所以操作视图中的数据, 本质上操作的是原始表中的数据</strong></p><h2 id="修改视图内容"><a href="#修改视图内容" class="headerlink" title="修改视图内容"></a>修改视图内容</h2><pre><code>alter view 视图名称 as select 语句;</code></pre><h2 id="删除视图"><a href="#删除视图" class="headerlink" title="删除视图"></a>删除视图</h2><pre><code>drop view [if exists] 视图名;</code></pre><h2 id="视图完整语句"><a href="#视图完整语句" class="headerlink" title="视图完整语句"></a>视图完整语句</h2><pre><code>create [algorithm=&#123;merge||temptable||undefined&#125;]view 视图名称as select 语句[with check option];</code></pre><h1 id="视图算法"><a href="#视图算法" class="headerlink" title="视图算法"></a>视图算法</h1><h2 id="merge"><a href="#merge" class="headerlink" title="merge"></a>merge</h2><p><strong>将视图的语句和外层的语句合并之后再执行，改算法允许更新数据</strong></p><pre><code>CREATE algorithm=merge VIEW person_view1 AS SELECT name, city FROM person;</code></pre><h2 id="temptable"><a href="#temptable" class="headerlink" title="temptable"></a>temptable</h2><p><strong>将视图生成一个临时表, 再执行外层的语句，该算法不允许更新数据</strong></p><pre><code>CREATE algorithm=temptable VIEW person_view2 AS SELECT name, city FROM person;</code></pre><h2 id="undefined"><a href="#undefined" class="headerlink" title="undefined"></a>undefined</h2><p><strong>由MySQL自己决定使用如上的哪一种算法, 默认就是undefined,一般情况下会自动选择merge算法</strong></p><pre><code>CREATE VIEW person_view3 AS SELECT name, city FROM person;</code></pre><p><strong>相当于数据库默认执行了下面语句：</strong></p><pre><code>CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `person_view3` AS select `person`.`name` AS `name`,`person`.`city` AS `city` from `person`</code></pre><h1 id="视图限制"><a href="#视图限制" class="headerlink" title="视图限制"></a>视图限制</h1><p><strong>在with check option的选项下，要保证数据update之后也要符合where的条件，要保证insert之后的数据能被视图查询出来，对于delete,有无 with check option都一样，对于没有where字句的视图，使用with check option是多余的</strong></p><p><strong>默认情况下哪怕插入的数据和更新的数据不符合创建视图条件, 我们也是可以通过视图来插入和更新的</strong></p><p><strong>如果想让插入和更新的数据必须符合创建视图的条件,那么就可以在创建视图的时候添加限制条件</strong></p><pre><code>SELECT name, city, score FROM person WHERE score &gt;= 60;CREATE VIEW person_view AS SELECT name, city, score FROM person WHERE score &gt;= 60 with check option;INSERT INTO person_view values(&#39;it666&#39;, &#39;台湾&#39;, 33); #报错, 由于不符合条件UPDATE person_view set score=55 WHERE name=&#39;ww&#39;;     #报错, 由于不符合条件</code></pre><h1 id="视图更新限制"><a href="#视图更新限制" class="headerlink" title="视图更新限制"></a>视图更新限制</h1><p><strong>如果视图的算法是merge算法, 那么可以更新视图</strong></p><p><strong>如果没有指with check option,那么无论数据符不符合创建视图条件都可以更新</strong></p><p><strong>如果指定了with check option, 那么只有符合创建视图条件才可以更新</strong></p><p><strong>除此之外由于视图是一张虚拟表,视图是基于原始表的,更新视图的本质就是更新原始表，所以只有原始表中存在的原始数据才可以更新,通过其它方式生成的数据都不可以更新</strong></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>数据库</category>
+      
+      <category>MySQL</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>技术</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MySQL数据库(五) —— 事务</title>
     <link href="/2020/10/10/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%BA%94)/"/>
     <url>/2020/10/10/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%BA%94)/</url>
