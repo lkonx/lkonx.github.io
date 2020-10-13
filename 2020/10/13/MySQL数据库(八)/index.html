@@ -2,9 +2,9 @@
 begin
     // sql语句
     // ... ...
-end;</code></pre><h3 id="调用"><a href="#调用" class="headerlink" title="调用"></a>调用</h3><pre><code>call 存储过程名称(参数);</code></pre><h2 id="查看存储过程"><a href="#查看存储过程" class="headerlink" title="查看存储过程"></a>查看存储过程</h2><p><strong>查看MySQL中所有存储过程</strong></p><pre><code>show procedure status;</code></pre><p><strong>查看指定数据库中的存储过程</strong></p><pre><code>show procedure status where db=&#39;db_name&#39;;</code></pre><p><strong>查看指定存储过程的源代码</strong></p><pre><code>show create procedure show_stu;</code></pre><h2 id="删除存储过程"><a href="#删除存储过程" class="headerlink" title="删除存储过程"></a>删除存储过程</h2><pre><code>drop procedure show_stu;</code></pre><h1 id="在MySQL中定义变量"><a href="#在MySQL中定义变量" class="headerlink" title="在MySQL中定义变量"></a>在MySQL中定义变量</h1><h2 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量:"></a>全局变量:</h2><pre><code>定义: @变量名称;
+end;</code></pre><h3 id="调用"><a href="#调用" class="headerlink" title="调用"></a>调用</h3><pre><code>call 存储过程名称(参数);</code></pre><h2 id="查看存储过程"><a href="#查看存储过程" class="headerlink" title="查看存储过程"></a>查看存储过程</h2><p><strong>查看MySQL中所有存储过程</strong></p><pre><code>show procedure status;</code></pre><p><strong>查看指定数据库中的存储过程</strong></p><pre><code>show procedure status where db=&#39;db_name&#39;;</code></pre><p><strong>查看指定存储过程的源代码</strong></p><pre><code>show create procedure show_stu;</code></pre><h2 id="删除存储过程"><a href="#删除存储过程" class="headerlink" title="删除存储过程"></a>删除存储过程</h2><pre><code>drop procedure show_stu;</code></pre><h1 id="在MySQL中定义变量"><a href="#在MySQL中定义变量" class="headerlink" title="在MySQL中定义变量"></a>在MySQL中定义变量</h1><h2 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h2><pre><code>定义: @变量名称;
 赋值: set @全局变量名称=值;
-      select 字段名称 into @全局变量名称 from 表名;</code></pre><h2 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量:"></a>局部变量:</h2><pre><code>定义: declare 变量名称 数据类型;
+      select 字段名称 into @全局变量名称 from 表名;</code></pre><h2 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量"></a>局部变量</h2><pre><code>定义: declare 变量名称 数据类型;
 赋值: set 局部变量名称=值;
       select 字段名称 into 局部变量名称 from 表名;</code></pre><h2 id="全局变量-1"><a href="#全局变量-1" class="headerlink" title="全局变量"></a>全局变量</h2><pre><code>set @stuId = 2;
 set @stuName = &#39;&#39;;
