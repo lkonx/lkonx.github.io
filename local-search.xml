@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>MySQL数据库(九) —— 自定义函数</title>
+    <link href="/2020/10/14/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%B9%9D)/"/>
+    <url>/2020/10/14/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E4%B9%9D)/</url>
+    
+    <content type="html"><![CDATA[<h1 id="自定义函数"><a href="#自定义函数" class="headerlink" title="自定义函数"></a>自定义函数</h1><p><strong>自定义函数和存储过程很像, 只不过自定义函数不需要手动通过call调用<br>而是和其它的聚合函数一样会在SQL语句中自动被调用</strong></p><pre><code>例如: select avg(score) from stu;例如: select count(*) from stu where age &gt;=18;</code></pre><h2 id="创建自定义函数"><a href="#创建自定义函数" class="headerlink" title="创建自定义函数"></a>创建自定义函数</h2><pre><code>create function 函数名(形参列表) returns 数据类型 函数特征beginsql语句;... ...return 值;end;</code></pre><h2 id="函数特征"><a href="#函数特征" class="headerlink" title="函数特征"></a>函数特征</h2><p><strong>1 DETERMINISTIC 不确定的<br>2 NO SQL 没有SQl语句，当然也不会修改数据<br>3 READS SQL DATA 只是读取数据，不会修改数据<br>4 MODIFIES SQL DATA 要修改数据<br>5 CONTAINS SQL 包含了SQL语句</strong></p><h2 id="调用函数"><a href="#调用函数" class="headerlink" title="调用函数"></a>调用函数</h2><p><strong>select 函数名称(参数) from dual;</strong></p><pre><code>create function fn_add(a int, b int) returns int DETERMINISTICbegindeclare sum int default 0;set sum = a + b;return sum;end;create function check_stu(stuId int) returns varchar(255) DETERMINISTICbegindeclare stuName varchar(255) default &#39;&#39;;select name into stuName from stu where id=stuId;return stuName;end;</code></pre><h2 id="查看函数"><a href="#查看函数" class="headerlink" title="查看函数"></a>查看函数</h2><h3 id="查看所有函数"><a href="#查看所有函数" class="headerlink" title="查看所有函数"></a>查看所有函数</h3><pre><code>show function status;</code></pre><h3 id="查看指定数据库中的函数"><a href="#查看指定数据库中的函数" class="headerlink" title="查看指定数据库中的函数"></a>查看指定数据库中的函数</h3><pre><code>show function status where db=&#39;db_name&#39;;</code></pre><h3 id="查看函数源代码"><a href="#查看函数源代码" class="headerlink" title="查看函数源代码"></a>查看函数源代码</h3><pre><code>show create function show_stu;</code></pre><h3 id="删除自定义函数"><a href="#删除自定义函数" class="headerlink" title="删除自定义函数"></a>删除自定义函数</h3><pre><code>drop function show_stu;</code></pre><h2 id="IF语句"><a href="#IF语句" class="headerlink" title="IF语句"></a>IF语句</h2><pre><code>if 条件表达式 then... ...elseif 条件表达式 then... ...else... ...end if;create function fn_test(age int) returns varchar(255) DETERMINISTICbegindeclare result varchar(255) default &#39;&#39;;if age &gt;= 18 thenset result = &#39;成年人&#39;;elseset result = &#39;未成年人&#39;;end if;return result;end;</code></pre><h2 id="CASE语句"><a href="#CASE语句" class="headerlink" title="CASE语句"></a>CASE语句</h2><pre><code>casewhen 条件表达式 then... ...when 条件表达式 then... ...end case;create function fn_test3(score int) returns varchar(255) DETERMINISTICbegindeclare result varchar(255) default &#39;&#39;;casewhen score=100 thenset result = &#39;还需努力&#39;;when score=0 thenset result = &#39;不需要努力了&#39;;end case;return result;end;</code></pre><h2 id="循环语句"><a href="#循环语句" class="headerlink" title="循环语句"></a>循环语句</h2><h3 id="while"><a href="#while" class="headerlink" title="while"></a>while</h3><pre><code>while 条件表达式 do    ... ...end while;1 + n的和 / 1 + 2 + 3 + 4 + 5create function fun_test4(num int)returns int DETERMINISTICbegindeclare sum int default 0;declare currentIndex int default 1;while currentIndex &lt;= num do    set sum = sum + currentIndex;    set currentIndex = currentIndex + 1;end while;return sum;end;</code></pre><h3 id="repeat"><a href="#repeat" class="headerlink" title="repeat"></a>repeat</h3><pre><code>repeat... ...until 条件表达式 end repeat;create function fun_test6(num int)returns int DETERMINISTICbegindeclare sum int default 0;declare currentIndex int default 1;repeat    set sum = sum + currentIndex;    set currentIndex = currentIndex + 1;until currentIndex &gt; num end repeat;return sum;end;</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>数据库</category>
+      
+      <category>MySQL</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>技术</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MySQL数据库(八) —— 存储过程</title>
     <link href="/2020/10/13/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E5%85%AB)/"/>
     <url>/2020/10/13/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93(%E5%85%AB)/</url>
